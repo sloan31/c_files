@@ -1,5 +1,4 @@
 
-
 var map = L.map('map').setView([39.617696, -105.603473], 17);
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -46,7 +45,7 @@ var myControl = L.Control.extend({
   
   // Add the custom control to the map
   map.addControl(new myControl());
- 
+
 //   toolbar with shape, edit etc.
 var drawnItems = L.featureGroup().addTo(map);
 
@@ -82,6 +81,37 @@ new L.Control.Draw({
         featureGroup: drawnItems
     }
 }).addTo(map);
+
+// Global variable to hold the polyline
+var userPath = L.polyline([], { color: 'blue' }).addTo(map);
+
+
+if(!navigator.geolocation) {
+    console.log("browser b bitchin")
+} else {
+    setInterval(() => {
+    navigator.geolocation.getCurrentPosition(getPosition)
+    }, 5000);
+}
+
+function getPosition(position){
+    // console.log(position)
+    var lat = position.coords.latitude
+    var long = position.coords.longitude 
+    var accuracy = position.coords.accuracy
+
+    // Update the polyline with the user's latest coordinates
+    userPath.addLatLng([lat, long]);
+
+    var marker = L.marker([lat, long]).addTo(map)
+    var circle = L.circle([lat, long], {radius: accuracy }).addTo(map)
+
+    console.log(lat, long, accuracy)
+}
+
+
+
+
 
 //add this
 function createFormPopup() {
@@ -150,7 +180,7 @@ function setData(e) {
         drawnItems.clearLayers();
     }
 }
-
+// determines which pop ups will be opened or closed 
 document.addEventListener("click", setData);
 
 map.addEventListener("draw:editstart", function(e) {
@@ -167,4 +197,3 @@ map.addEventListener("draw:deletestop", function(e) {
         drawnItems.openPopup();
     }
 });
-
